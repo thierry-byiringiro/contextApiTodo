@@ -1,21 +1,20 @@
-import React, { useState } from "react";
-import { json, NavLink } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { NavLink, useSearchParams } from "react-router-dom";
 import del from "../assets/delete.png";
 import upd from "../assets/edit.png";
+import { TodoContext } from "../context/TodoContext";
 
-function TodoList({ todos, onDelete, revalidate, url }) {
-  function handleIsCompleted(id) {
-    const currentTodos = JSON.parse(localStorage.getItem("task") || "[]");
-    const updateTodos = currentTodos.map((todo) =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-    );
-    localStorage.setItem("task", JSON.stringify(updateTodos));
-    revalidate();
-  }
-    const filteredTodos = todos.filter((todo) => {
-        if (!url) return true;
-        return String(todo.completed) === url;
-    });
+function TodoList() {
+  const { todos, deleteTodo } = useContext(TodoContext);
+  const [searchParams] = useSearchParams();
+  const url = searchParams.get("isCompleted");
+
+  const { handleIsCompleted } = useContext(TodoContext);
+
+  const filteredTodos = todos.filter((todo) => {
+    if (!url) return true;
+    return String(todo.completed) === url;
+  });
   const getTasks = filteredTodos.map((todo) => {
     return (
       <li
@@ -39,7 +38,7 @@ function TodoList({ todos, onDelete, revalidate, url }) {
             <img src={upd} alt="edit" />
           </NavLink>
           <button
-            onClick={() => onDelete(todo.id)}
+            onClick={() => deleteTodo(todo.id)}
             className="w-5 h-5 opacity-70 hover:opacity-100 transition"
           >
             <img src={del} alt="delete" />
@@ -50,19 +49,21 @@ function TodoList({ todos, onDelete, revalidate, url }) {
   });
   return (
     <>
-      <div className="flex space-x-2 justify-between">
-        <div className="flex space-x-2" >
-          <NavLink to="/?isCompleted=true" className="">
-            Completed
-          </NavLink>
-          <NavLink to="/?isCompleted=false" className="">
-            NotCompleted
+      {filteredTodos.length > 0 && (
+        <div className="flex space-x-2 justify-between">
+          <div className="flex space-x-2">
+            <NavLink to="/?isCompleted=true" className="">
+              Completed
+            </NavLink>
+            <NavLink to="/?isCompleted=false" className="">
+              NotCompleted
+            </NavLink>
+          </div>
+          <NavLink to="/" className="">
+            All
           </NavLink>
         </div>
-        <NavLink to="/" className="">
-          All
-        </NavLink>
-      </div>
+      )}
       <ul className="w-full font-semibold flex flex-col space-y-3">
         {getTasks}
       </ul>
